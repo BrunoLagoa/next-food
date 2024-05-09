@@ -10,9 +10,18 @@ const Cart = () => {
   const { products, subTotalPrice, totalPrice, totalDiscount } =
     useContext(CartContext);
 
+  if (!products.length) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <h3 className="font-semibold">Sua sacola está vazia.</h3>
+        <p className="text-xs">Adicione produtos para continuar.</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="space-y-4">
+    <div className="flex h-full flex-col bg-green-500">
+      <div className="flex-auto space-y-4">
         {products.map((product) => (
           <CartItem key={product.id} cartProduct={product} />
         ))}

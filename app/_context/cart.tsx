@@ -19,12 +19,22 @@ export type CartProduct = CartProductPrisma & {
   quantity: number;
 };
 
+type AddProductToCart = {
+  product: CartProductPrisma;
+  quantity: number;
+  emptyCart?: boolean;
+};
+
 type CartContextType = {
   products: CartProduct[];
   subTotalPrice: number;
   totalPrice: number;
   totalDiscount: number;
-  addProductToCart: (product: CartProductPrisma, quantity: number) => void;
+  addProductToCart: ({
+    product,
+    quantity,
+    emptyCart,
+  }: AddProductToCart) => void;
   decreaseProductQuantity: (productId: string) => void;
   increaseProductQuantity: (productId: string) => void;
   removeProductFromCart: (productId: string) => void;
@@ -93,7 +103,15 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     );
   };
 
-  const addProductToCart = (product: CartProductPrisma, quantity: number) => {
+  const addProductToCart = ({
+    product,
+    quantity,
+    emptyCart,
+  }: AddProductToCart) => {
+    if (emptyCart) {
+      setProducts([]);
+    }
+
     const isProductInCart = products.some(
       (cartProduct) => cartProduct.id === product.id,
     );
