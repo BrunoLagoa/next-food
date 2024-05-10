@@ -20,7 +20,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="flex h-full flex-col bg-green-500">
+    <div className="flex h-full flex-col">
       <div className="flex-auto space-y-4">
         {products.map((product) => (
           <CartItem key={product.id} cartProduct={product} />

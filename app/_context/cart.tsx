@@ -30,6 +30,7 @@ type CartContextType = {
   subTotalPrice: number;
   totalPrice: number;
   totalDiscount: number;
+  totalQuantity: number;
   addProductToCart: ({
     product,
     quantity,
@@ -49,6 +50,7 @@ export const CartContext = createContext<CartContextType>({
   subTotalPrice: 0,
   totalPrice: 0,
   totalDiscount: 0,
+  totalQuantity: 0,
   addProductToCart: () => {},
   decreaseProductQuantity: () => {},
   increaseProductQuantity: () => {},
@@ -72,7 +74,14 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     );
   }, [products]);
 
-  const totalDiscount = subTotalPrice - totalPrice;
+  const totalQuantity = useMemo(() => {
+    return products.reduce((acc, product) => {
+      return acc + product.quantity;
+    }, 0);
+  }, [products]);
+
+  const totalDiscount =
+    subTotalPrice - totalPrice + Number(products[0]?.restaurant.deliveryFee);
 
   const decreaseProductQuantity = (productId: string) => {
     setProducts((prevProducts) =>
@@ -138,6 +147,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
         subTotalPrice,
         totalPrice,
         totalDiscount,
+        totalQuantity,
         addProductToCart,
         decreaseProductQuantity,
         increaseProductQuantity,
