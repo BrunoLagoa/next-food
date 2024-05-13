@@ -9,7 +9,9 @@ type CartProductPrisma = Prisma.ProductGetPayload<{
   include: {
     restaurant: {
       select: {
+        id: true;
         deliveryFee: true;
+        deliveryTimeMinutes: true;
       };
     };
   };
@@ -39,6 +41,7 @@ type CartContextType = {
   decreaseProductQuantity: (productId: string) => void;
   increaseProductQuantity: (productId: string) => void;
   removeProductFromCart: (productId: string) => void;
+  clearCart: () => void;
 };
 
 type CartProviderProps = {
@@ -55,6 +58,7 @@ export const CartContext = createContext<CartContextType>({
   decreaseProductQuantity: () => {},
   increaseProductQuantity: () => {},
   removeProductFromCart: () => {},
+  clearCart: () => {},
 });
 
 export const CartProvider = ({ children }: CartProviderProps) => {
@@ -140,6 +144,10 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     setProducts((prevProducts) => [...prevProducts, { ...product, quantity }]);
   };
 
+  const clearCart = () => {
+    return setProducts([]);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -152,6 +160,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
         decreaseProductQuantity,
         increaseProductQuantity,
         removeProductFromCart,
+        clearCart,
       }}
     >
       {children}

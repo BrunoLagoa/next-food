@@ -1,14 +1,69 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { CartContext } from "../_context/cart";
 import CartItem from "./cart-item";
 import { Card, CardContent } from "./ui/card";
 import { formatCurrency } from "../_helpers/price";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
+import { OrderStatus } from "@prisma/client";
+import { createOrder } from "../_actions/order";
+import { useSession } from "next-auth/react";
+import { Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 const Cart = () => {
-  const { products, subTotalPrice, totalPrice, totalDiscount } =
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
+    useState(false);
+
+  const { data } = useSession();
+  const { products, subTotalPrice, totalPrice, totalDiscount, clearCart } =
     useContext(CartContext);
+
+  const handleFinishOrder = async () => {
+    if (!data?.user) {
+      return;
+    }
+    const restaurant = products[0].restaurant;
+
+    try {
+      setIsSubmitLoading(true);
+
+      await createOrder({
+        subTotalPrice,
+        totalDiscounts: totalDiscount,
+        totalPrice,
+        deliveryFee: restaurant.deliveryFee,
+        deliveryTimeMinutes: restaurant.deliveryTimeMinutes,
+        restaurant: {
+          connect: {
+            id: restaurant.id,
+          },
+        },
+        status: OrderStatus.PENDING,
+        user: {
+          connect: {
+            id: data.user.id,
+          },
+        },
+      });
+
+      clearCart();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitLoading(false);
+    }
+  };
 
   if (!products.length) {
     return (
@@ -66,7 +121,41 @@ const Cart = () => {
         </Card>
       </div>
 
-      <Button className="mt-6 w-full">Finalizar pedido</Button>
+      <Button
+        className="mt-6 w-full"
+        onClick={() => setIsConfirmationDialogOpen(true)}
+        disabled={isSubmitLoading}
+      >
+        Finalizar pedido
+      </Button>
+
+      <AlertDialog
+        open={isConfirmationDialogOpen}
+        onOpenChange={setIsConfirmationDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Deseja realizar seu pedido agora?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Ao finalizar, você não poderá mais alterar seu pedido.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleFinishOrder}
+              disabled={isSubmitLoading}
+            >
+              {isSubmitLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Finalizar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
