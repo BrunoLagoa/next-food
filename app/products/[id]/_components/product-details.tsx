@@ -162,7 +162,7 @@ const ProductDetails = ({
             <SheetTitle className="text-left">Minha sacola</SheetTitle>
           </SheetHeader>
           <SheetDescription className="h-full py-5">
-            <Cart />
+            <Cart setIsOpen={setIsCartOpen} />
           </SheetDescription>
         </SheetContent>
       </Sheet>
