@@ -9,20 +9,22 @@ import Link from "next/link";
 import { cn } from "../_lib/utils";
 import { toggleFavoriteRestaurant } from "../_actions/restaurant";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 type RestaurantItemProps = {
-  userId?: string;
   restaurant: Restaurant;
   userFavoriteRestaurants: UserFavoriteRestaurant[];
   className?: string;
 };
 
 const RestaurantItem = ({
-  userId,
   restaurant,
   userFavoriteRestaurants,
   className,
 }: RestaurantItemProps) => {
+  const { data } = useSession();
+  const userId = data?.user?.id;
+
   const isFavorite = userFavoriteRestaurants.some(
     (favoriteRestaurant) => favoriteRestaurant.restaurantId === restaurant.id,
   );
