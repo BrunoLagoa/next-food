@@ -24,44 +24,57 @@ model Category {
   id          String       @id @default(uuid())
   name        String
   imageUrl    String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
   restaurants Restaurant[]
   products    Product[]
+  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime     @default(now())
 }
 
 model Product {
-  id                 String     @id @default(uuid())
+  id                 String         @id @default(uuid())
   name               String
   description        String
   imageUrl           String
-  price              Decimal    @db.Decimal(10, 2)
-  discountPercentage Int        @default(0)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  price              Decimal        @db.Decimal(10, 2)
+  discountPercentage Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   restaurantId       String
-  restaurant         Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurant         Restaurant     @relation(fields: [restaurantId], references: [id])
   categoryIds        String
-  category           Category   @relation(fields: [categoryIds], references: [id])
-  orders             Order[]
+  category           Category       @relation(fields: [categoryIds], references: [id])
+  orderProduct       OrderProduct[]
+  Order              Order[]
+}
+
+model OrderProduct {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
 }
 
 model Order {
-  id                  String      @id @default(uuid())
-  deliveryFee         Decimal     @db.Decimal(10, 2)
+  id                  String         @id @default(uuid())
+  deliveryFee         Decimal        @db.Decimal(10, 2)
   deliveryTimeMinutes Int
-  subTotalPrice       Decimal     @db.Decimal(10, 2)
-  totalPrice          Decimal     @db.Decimal(10, 2)
-  totalDiscounts      Decimal     @db.Decimal(10, 2)
+  subTotalPrice       Decimal        @db.Decimal(10, 2)
+  totalPrice          Decimal        @db.Decimal(10, 2)
+  totalDiscounts      Decimal        @db.Decimal(10, 2)
   restaurantId        String
-  restaurant          Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurant          Restaurant     @relation(fields: [restaurantId], references: [id])
   userId              String
-  user                User        @relation(fields: [userId], references: [id])
-  products            Product[]
-  status              OrderStatus @default(PENDING)
+  user                User           @relation(fields: [userId], references: [id])
+  products            OrderProduct[]
+  status              OrderStatus    @default(PENDING)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId String?
 }
 
 enum OrderStatus {
