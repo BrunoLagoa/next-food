@@ -7,14 +7,14 @@ import { formatCurrency } from "../_helpers/price";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { cn } from "../_lib/utils";
-import { toggleFavoriteRestaurant } from "../_actions/restaurant";
-import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { isRestaurantFavorited } from "../_helpers/is-restaurant-favorited";
+import useToggleFavoriteRestaurant from "../_hooks/use-toggle-favorite-restaurant";
 
 type RestaurantItemProps = {
   restaurant: Restaurant;
-  userFavoriteRestaurants: UserFavoriteRestaurant[];
   className?: string;
+  userFavoriteRestaurants?: UserFavoriteRestaurant[];
 };
 
 const RestaurantItem = ({
@@ -25,24 +25,15 @@ const RestaurantItem = ({
   const { data } = useSession();
   const userId = data?.user?.id;
 
-  const isFavorite = userFavoriteRestaurants.some(
-    (favoriteRestaurant) => favoriteRestaurant.restaurantId === restaurant.id,
-  );
+  const isFavorite = userFavoriteRestaurants
+    ? isRestaurantFavorited(restaurant.id, userFavoriteRestaurants)
+    : false;
 
-  const handleFavoriteOrUnfavoriteRestaurant = async () => {
-    if (!userId) return;
-
-    try {
-      await toggleFavoriteRestaurant(userId, restaurant.id);
-      const FavoriteMessage = isFavorite
-        ? "Restaurante removido dos favoritos"
-        : "Restaurante adicionado aos favoritos";
-
-      toast.success(FavoriteMessage);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const { handleToggleFavoriteRestaurant } = useToggleFavoriteRestaurant({
+    restaurantId: restaurant.id,
+    userId: data?.user?.id,
+    isRestaurantFavorited: isFavorite,
+  });
 
   return (
     <div className={cn("min-w-[266px] max-w-[266px]", className)}>
@@ -66,7 +57,7 @@ const RestaurantItem = ({
             <Button
               size="icon"
               className={`absolute right-2 top-2 h-7 w-7 rounded-full bg-gray-600 ${isFavorite && "bg-primary hover:bg-gray-700"}`}
-              onClick={handleFavoriteOrUnfavoriteRestaurant}
+              onClick={handleToggleFavoriteRestaurant}
             >
               <HeartIcon size={16} className="fill-white" />
             </Button>
