@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 "use client";
 
-import { ReactNode, createContext, useMemo, useState } from "react";
-import { Prisma, Product } from "@prisma/client";
+import { ReactNode, createContext, useState } from "react";
+import { Prisma } from "@prisma/client";
 import { calculateProductTotalPrice } from "../_helpers/price";
 
 type CartProductPrisma = Prisma.ProductGetPayload<{
@@ -64,25 +64,18 @@ export const CartContext = createContext<CartContextType>({
 export const CartProvider = ({ children }: CartProviderProps) => {
   const [products, setProducts] = useState<CartProduct[]>([]);
 
-  const subTotalPrice = useMemo(() => {
-    return products.reduce((acc, product) => {
-      return acc + Number(product.price) * product.quantity;
-    }, 0);
-  }, [products]);
+  const subTotalPrice = products.reduce((acc, product) => {
+    return acc + Number(product.price) * product.quantity;
+  }, 0);
 
-  const totalPrice = useMemo(() => {
-    return (
-      products.reduce((acc, product) => {
-        return acc + calculateProductTotalPrice(product) * product.quantity;
-      }, 0) + Number(products[0]?.restaurant.deliveryFee)
-    );
-  }, [products]);
+  const totalPrice =
+    products.reduce((acc, product) => {
+      return acc + calculateProductTotalPrice(product) * product.quantity;
+    }, 0) + Number(products[0]?.restaurant.deliveryFee);
 
-  const totalQuantity = useMemo(() => {
-    return products.reduce((acc, product) => {
-      return acc + product.quantity;
-    }, 0);
-  }, [products]);
+  const totalQuantity = products.reduce((acc, product) => {
+    return acc + product.quantity;
+  }, 0);
 
   const totalDiscount =
     subTotalPrice - totalPrice + Number(products[0]?.restaurant.deliveryFee);
