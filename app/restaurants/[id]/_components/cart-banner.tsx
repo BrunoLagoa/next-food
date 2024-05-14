@@ -8,18 +8,18 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/app/_components/ui/sheet";
 import { CartContext } from "@/app/_context/cart";
 import { formatCurrency } from "@/app/_helpers/price";
 import { Restaurant } from "@prisma/client";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 type CartBannerProps = {
   restaurant: Pick<Restaurant, "id">;
 };
 
 const CartBanner = ({ restaurant: { id } }: CartBannerProps) => {
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const { products, totalPrice, totalQuantity } = useContext(CartContext);
 
   const restaurantHasProductsOnCart = products.some(
@@ -44,16 +44,15 @@ const CartBanner = ({ restaurant: { id } }: CartBannerProps) => {
           </p>
         </div>
 
-        <Sheet>
-          <SheetTrigger>
-            <Button>Ver sacola</Button>
-          </SheetTrigger>
+        <Button onClick={() => setIsCartOpen(true)}>Ver sacola</Button>
+
+        <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
           <SheetContent>
             <SheetHeader>
               <SheetTitle className="text-left">Minha sacola</SheetTitle>
             </SheetHeader>
             <SheetDescription className="h-full py-5">
-              <Cart />
+              <Cart setIsOpen={setIsCartOpen} />
             </SheetDescription>
           </SheetContent>
         </Sheet>
